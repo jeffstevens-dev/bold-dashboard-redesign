@@ -1,11 +1,715 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bold Dashboard</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#ECEAE3;min-height:100vh}
+
+.outer{display:flex;flex-direction:column;align-items:center;padding:24px 16px 60px;gap:28px}
+.controls{display:flex;flex-direction:column;align-items:center;gap:10px;width:390px}
+.ctrl-row{display:flex;gap:6px;background:#dedad2;border-radius:10px;padding:3px;width:100%}
+.ctrl-btn{flex:1;padding:7px 8px;border-radius:8px;border:none;font-size:11px;font-weight:500;cursor:pointer;background:transparent;color:#666;transition:all .15s;white-space:nowrap;font-family:'Inter',sans-serif}
+.ctrl-btn.active{background:#fff;color:#1a1a1a;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.ctrl-label{font-size:10px;color:#888;text-align:center;letter-spacing:.3px;text-transform:uppercase}
+
+.phone{width:390px;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 6px 32px rgba(0,0,0,.13),0 0 0 1px rgba(0,0,0,.06);min-height:700px}
+
+/* TOP BAR */
+.topbar{background:#fff;border-bottom:.5px solid #e8e6df;display:flex;align-items:center;justify-content:space-between;padding:0 16px;height:52px;position:sticky;top:0;z-index:10}
+.hamburger{display:flex;flex-direction:column;gap:4px;cursor:pointer;padding:4px;width:28px}
+.hb-line{height:1.5px;background:#1a1a1a;border-radius:2px}
+.logo{display:flex;align-items:center;gap:5px}
+.logo-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;width:16px}
+.logo-dot{width:4px;height:4px;background:#5d57fb;border-radius:.8px}
+.logo-text{font-size:16px;font-weight:800;color:#1a1a1a;letter-spacing:-.4px}
+.logo-tld{color:#5d57fb}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.bp-pill{display:flex;align-items:center;gap:4px;background:#eeeeff;border-radius:20px;padding:5px 9px}
+.bp-icon{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5px;width:12px}
+.bp-dot{width:3px;height:3px;background:#5d57fb;border-radius:.5px}
+.bp-val{font-size:11px;font-weight:700;color:#5d57fb}
+.notif-btn{width:30px;height:30px;border-radius:50%;background:#f5f4f0;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;border:none}
+.badge{position:absolute;top:-2px;right:-2px;background:#e05c3a;color:#fff;font-size:8px;font-weight:700;border-radius:6px;padding:1px 4px;line-height:1.4}
+
+/* PAGE TABS */
+.page-tabs{display:flex;border-bottom:.5px solid #e8e6df;background:#fff;position:sticky;top:52px;z-index:9}
+.pt{flex:1;text-align:center;padding:11px 0;font-size:13px;font-weight:500;color:#999;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;font-family:'Inter',sans-serif}
+.pt.active{color:#5d57fb;border-bottom-color:#5d57fb;font-weight:600}
+
+.scroll{overflow-y:auto;background:#f5f4f0}
+.page{display:none;padding-bottom:32px}
+.page.active{display:block}
+.sec{padding:0 16px;margin-top:20px}
+.sec-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.sec-title{font-size:15px;font-weight:700;color:#1a1a1a}
+.sec-link{font-size:12px;color:#5d57fb;font-weight:500}
+
+/* ── COCKPIT — solid #5d57fb + glass children ── */
+.cockpit{padding:20px 16px 0;color:#fff;background:#5d57fb}
+
+/* glass card shared base */
+.glass{
+  background:rgba(255,255,255,.14);
+  backdrop-filter:saturate(180%) blur(20px);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);
+  border:1px solid rgba(255,255,255,.22);
+  border-radius:16px;
+}
+
+.ckt-eyebrow{font-size:12px;color:rgba(255,255,255,.7);margin-bottom:4px}
+.ckt-headline{font-size:20px;font-weight:800;line-height:1.25;letter-spacing:-.3px;margin-bottom:16px}
+.ckt-headline em{font-style:normal;color:rgba(255,255,255,.85);text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(255,255,255,.35)}
+
+/* METER — glass card */
+.meter{padding:14px 14px 12px}
+.meter-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
+.meter-val{font-size:26px;font-weight:800;letter-spacing:-1px}
+.meter-goal{font-size:11px;color:rgba(255,255,255,.6)}
+.meter-sub{font-size:11px;color:rgba(255,255,255,.65);margin-bottom:10px;line-height:1.4}
+.bar-bg{background:rgba(255,255,255,.2);border-radius:4px;height:5px;overflow:hidden;margin-bottom:6px}
+.bar-fill{height:100%;border-radius:4px;background:#fff;transition:width .5s ease}
+.milestones{display:flex;justify-content:space-between}
+.ms{font-size:10px;color:rgba(255,255,255,.4)}
+.ms.hit{color:rgba(255,255,255,.8);font-weight:600}
+.ms.next{color:#fff;font-weight:700}
+.pace-row{display:flex;align-items:flex-start;gap:6px;margin-top:10px;padding-top:10px;border-top:.5px solid rgba(255,255,255,.18)}
+.pace-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.6);flex-shrink:0;margin-top:3px}
+.pace-text{font-size:11px;color:rgba(255,255,255,.65);line-height:1.5}
+
+/* COMEBACK — glass card, smaller */
+.comeback{padding:10px 12px;margin-top:10px;display:flex;align-items:center;gap:8px;border-radius:12px;
+  background:rgba(255,255,255,.12);
+  backdrop-filter:saturate(180%) blur(20px);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);
+  border:1px solid rgba(255,255,255,.18);
+}
+.comeback-icon{width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.comeback-text{font-size:11px;color:rgba(255,255,255,.8);line-height:1.5}
+.comeback-text strong{color:#fff;font-weight:600}
+
+/* STEPS STRIP — glass card */
+.steps-strip{display:flex;margin-top:14px;border-radius:14px;overflow:hidden;
+  background:rgba(255,255,255,.12);
+  backdrop-filter:saturate(180%) blur(20px);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);
+  border:1px solid rgba(255,255,255,.18);
+}
+.step-cell{flex:1;padding:12px 8px;text-align:center;border-right:.5px solid rgba(255,255,255,.14);position:relative}
+.step-cell:last-child{border-right:none}
+.step-icon{font-size:14px;margin-bottom:3px;display:block}
+.step-lbl{font-size:9px;color:rgba(255,255,255,.55);line-height:1.3}
+.step-pts{font-size:9px;color:rgba(255,255,255,.8);font-weight:600;margin-top:1px}
+.step-check{position:absolute;top:6px;right:6px;width:13px;height:13px;border-radius:50%;background:rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center}
+.step-open{position:absolute;top:6px;right:6px;width:13px;height:13px;border-radius:50%;border:1.5px solid rgba(255,255,255,.25)}
+
+/* cockpit bottom spacing */
+.cockpit-pad{height:20px;background:#5d57fb}
+
+/* ACTION CARD */
+.action-card{background:#fff;border-radius:16px;border:.5px solid #e8e6df;overflow:hidden}
+.ac-tag{color:#fff;font-size:10px;font-weight:700;letter-spacing:.4px;padding:6px 14px}
+.ac-tag.purple{background:#5d57fb}
+.ac-tag.green{background:#1f7a3d}
+.ac-tag.amber{background:#8a5200}
+.ac-body{padding:14px}
+.ac-row{display:flex;gap:12px;align-items:flex-start}
+.ac-thumb{width:60px;height:60px;border-radius:12px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#5d57fb;color:#fff}
+.ac-thumb-num{font-size:15px;font-weight:800}
+.ac-thumb-lbl{font-size:8px;text-align:center;opacity:.8;line-height:1.2}
+.ac-info{flex:1;min-width:0}
+.ac-name{font-size:14px;font-weight:700;color:#1a1a1a;line-height:1.3;margin-bottom:6px}
+.ac-chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px}
+.chip{font-size:10px;padding:3px 8px;border-radius:6px;font-weight:500}
+.chip.easy{background:#eaf6ee;color:#1f7a3d}
+.chip.prize{background:#eeeeff;color:#5d57fb}
+.chip.deadline{background:#fff4e0;color:#8a5200}
+.win-signal{display:flex;align-items:center;gap:5px;font-size:11px;color:#666}
+.win-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.ac-btns{display:flex;gap:8px;margin-top:12px}
+.btn-p{flex:1;background:#5d57fb;color:#fff;border:none;border-radius:10px;padding:11px 10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+.btn-g{background:#f0efe8;color:#555;border:none;border-radius:10px;padding:11px 14px;font-size:13px;cursor:pointer;font-family:'Inter',sans-serif}
+
+/* PIPELINE */
+.pipeline{background:#fff;border-radius:16px;border:.5px solid #e8e6df;overflow:hidden}
+.pl-row{display:flex;align-items:center;gap:10px;padding:12px 14px}
+.pl-row:not(:last-child){border-bottom:.5px solid #f5f4f0}
+.pl-ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pl-ic.pu{background:#eeeeff}.pl-ic.gr{background:#eaf6ee}.pl-ic.am{background:#fff4e0}
+.pl-txt{flex:1}
+.pl-name{font-size:13px;font-weight:600;color:#1a1a1a}
+.pl-sub{font-size:11px;color:#999;margin-top:1px}
+.pl-val{font-size:14px;font-weight:700}
+.pl-val.pu{color:#5d57fb}.pl-val.gr{color:#1f7a3d}.pl-val.am{color:#8a5200}.pl-val.dim{color:#ccc}
+
+/* EARN GRID */
+.earn-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.earn-card{background:#fff;border:.5px solid #e8e6df;border-radius:14px;padding:14px;cursor:pointer}
+.ec-ic{width:34px;height:34px;border-radius:9px;margin-bottom:8px;display:flex;align-items:center;justify-content:center}
+.ec-name{font-size:12px;font-weight:600;color:#1a1a1a;margin-bottom:3px;line-height:1.3}
+.ec-earn{font-size:12px;color:#5d57fb;font-weight:600}
+.ec-sub{font-size:10px;color:#999;margin-top:1px}
+.ec-bar{height:3px;background:#f0efe8;border-radius:2px;margin-top:10px;overflow:hidden}
+.ec-bar-fill{height:100%;background:#5d57fb;border-radius:2px}
+
+/* SOCIAL PROOF */
+.proof-strip{background:#fff;border-radius:14px;border:.5px solid #e8e6df;padding:12px 14px;display:flex}
+.proof-cell{flex:1;text-align:center}
+.proof-cell:not(:last-child){border-right:.5px solid #f0efe8}
+.proof-num{font-size:16px;font-weight:800;color:#1a1a1a}
+.proof-lbl{font-size:10px;color:#999;margin-top:2px;line-height:1.3}
+
+/* STREAK */
+.streak-bar{background:linear-gradient(135deg,#1f7a3d,#2d9e55);border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin:0 16px}
+.sb-text{flex:1}
+.sb-hl{font-size:13px;font-weight:700;color:#fff}
+.sb-sub{font-size:11px;color:rgba(255,255,255,.7);margin-top:2px}
+.fire{font-size:22px}
+
+/* REDEEM */
+.redeem-card{background:linear-gradient(135deg,#1f7a3d,#2d9e55);border-radius:16px;padding:16px;margin:0 16px}
+.rc-lbl{font-size:10px;color:rgba(255,255,255,.65);text-transform:uppercase;letter-spacing:.5px}
+.rc-amount{font-size:30px;font-weight:800;color:#fff;letter-spacing:-1px;margin:4px 0 2px}
+.rc-sub{font-size:11px;color:rgba(255,255,255,.7);margin-bottom:12px}
+.rc-btn{background:#fff;color:#1f7a3d;border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif}
+
+/* NOTICE */
+.notice{background:#fff8ed;border-radius:12px;padding:11px 13px;display:flex;gap:10px;border:.5px solid #fce4b3}
+.notice-ic{width:26px;height:26px;border-radius:8px;background:#8a5200;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.nt-title{font-size:12px;font-weight:700;color:#5a3400}
+.nt-sub{font-size:11px;color:#8a5200;margin-top:2px;line-height:1.4}
+
+/* ── REWARDS HERO — solid #5d57fb + glass ── */
+.rewards-hero{background:#5d57fb;padding:20px 16px 24px;color:#fff}
+.rh-label{font-size:11px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.rh-balance{font-size:32px;font-weight:800;letter-spacing:-1px;margin-bottom:2px}
+.rh-equiv{font-size:14px;color:rgba(255,255,255,.85);margin-bottom:16px}
+.rh-glass{padding:14px;
+  background:rgba(255,255,255,.14);
+  backdrop-filter:saturate(180%) blur(20px);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);
+  border:1px solid rgba(255,255,255,.22);
+  border-radius:16px;
+}
+.rh-bar-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.rh-bar-label{font-size:11px;color:rgba(255,255,255,.65)}
+.rh-bar-pct{font-size:11px;color:#fff;font-weight:600}
+.rh-bar-bg{height:5px;background:rgba(255,255,255,.2);border-radius:4px;overflow:hidden;margin-bottom:12px}
+.rh-bar-fill{height:100%;background:#fff;border-radius:4px}
+.rh-redeem-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.rh-redeem-info{font-size:12px;color:rgba(255,255,255,.7);line-height:1.5}
+.rh-redeem-btn{background:rgba(255,255,255,.9);color:#5d57fb;border:none;border-radius:10px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:'Inter',sans-serif}
+.rh-redeem-btn.disabled{background:rgba(255,255,255,.15);color:rgba(255,255,255,.35);cursor:default}
+.rh-pace{display:flex;align-items:flex-start;gap:6px;margin-top:12px;padding-top:12px;border-top:.5px solid rgba(255,255,255,.18);font-size:11px;color:rgba(255,255,255,.6);line-height:1.5}
+
+/* EARN WAYS */
+.earn-way{background:#fff;border-radius:14px;border:.5px solid #e8e6df;overflow:hidden;margin-bottom:10px}
+.ew-top{display:flex;align-items:center;gap:12px;padding:14px}
+.ew-ic{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ew-info{flex:1}
+.ew-name{font-size:14px;font-weight:700;color:#1a1a1a}
+.ew-earn{font-size:12px;color:#5d57fb;font-weight:600;margin-top:1px}
+.ew-cta{background:#5d57fb;color:#fff;border:none;border-radius:9px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;flex-shrink:0;font-family:'Inter',sans-serif}
+.ew-cta.secondary{background:#eeeeff;color:#5d57fb}
+.ew-desc{padding:10px 14px 14px;font-size:12px;color:#666;line-height:1.6;border-top:.5px solid #f5f4f0}
+.ew-merchants{display:flex;gap:8px;overflow-x:auto;padding:0 14px 14px;scrollbar-width:none}
+.merchant{background:#f5f4f0;border-radius:10px;padding:8px 12px;flex-shrink:0;text-align:center}
+.merchant-name{font-size:11px;font-weight:600;color:#1a1a1a}
+.merchant-pts{font-size:10px;color:#5d57fb;font-weight:500;margin-top:1px}
+
+/* REDEEM OPTS */
+.redeem-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.redeem-opt{background:#fff;border:.5px solid #e8e6df;border-radius:14px;padding:14px;cursor:pointer}
+.ro-ic{font-size:22px;margin-bottom:6px}
+.ro-name{font-size:12px;font-weight:700;color:#1a1a1a;margin-bottom:2px}
+.ro-sub{font-size:10px;color:#999}
+.ro-min{font-size:10px;color:#5d57fb;font-weight:500;margin-top:6px}
+.redeem-opt.best{border-color:#5d57fb;border-width:1.5px}
+.best-badge{background:#5d57fb;color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:5px;display:inline-block;margin-bottom:6px}
+
+/* SCHOLARSHIPS */
+.sch-hero{background:#fff;border-bottom:.5px solid #e8e6df;padding:16px}
+.sh-greeting{font-size:13px;color:#666;margin-bottom:4px}
+.sh-headline{font-size:18px;font-weight:800;color:#1a1a1a;letter-spacing:-.3px;margin-bottom:12px}
+.sh-tabs{display:flex;gap:6px}
+.sh-tab{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;border:.5px solid #e8e6df;background:#fff;color:#666;font-family:'Inter',sans-serif}
+.sh-tab.active{background:#5d57fb;color:#fff;border-color:#5d57fb}
+.search-row{display:flex;gap:8px;padding:12px 16px;background:#fff;border-bottom:.5px solid #e8e6df}
+.search-input{flex:1;border:.5px solid #e8e6df;border-radius:10px;padding:9px 12px;font-size:13px;color:#1a1a1a;background:#f5f4f0;outline:none;font-family:'Inter',sans-serif}
+.filter-btn{width:36px;height:36px;border-radius:10px;background:#f5f4f0;border:.5px solid #e8e6df;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+
+.sch-card{background:#fff;border-radius:16px;border:.5px solid #e8e6df;overflow:hidden;margin-bottom:10px}
+.sch-img-area{height:72px;background:#5d57fb;display:flex;align-items:center;justify-content:center;position:relative}
+.sch-img-area.green{background:linear-gradient(135deg,#1f7a3d,#2d9e55)}
+.sch-img-area.amber{background:linear-gradient(135deg,#8a5200,#c4760a)}
+.sch-img-area.deep{background:linear-gradient(135deg,#533489,#7c52c8)}
+.sch-amount{background:rgba(255,255,255,.92);color:#3a35c4;font-size:16px;font-weight:800;padding:4px 12px;border-radius:8px;letter-spacing:-.3px}
+.sch-amount.green{color:#1a5c2e}
+.sch-amount.amber{color:#5a3400}
+.sch-amount.deep{color:#3d2070}
+.sch-signal{position:absolute;top:8px;right:10px;font-size:9px;font-weight:700;padding:3px 8px;border-radius:5px}
+.sig-strong{background:#1f7a3d;color:#fff}
+.sig-few{background:#fff4e0;color:#8a5200}
+.sig-new{background:rgba(255,255,255,.9);color:#5d57fb}
+.sch-time{position:absolute;top:8px;left:10px;font-size:9px;color:rgba(255,255,255,.9);background:rgba(0,0,0,.2);padding:3px 8px;border-radius:5px;font-weight:500}
+.sch-body{padding:12px 14px}
+.sch-name{font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:6px;line-height:1.3}
+.sch-chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.sch-chip{font-size:10px;padding:3px 8px;border-radius:6px;font-weight:500}
+.sch-chip.easy{background:#eaf6ee;color:#1f7a3d}
+.sch-chip.essay{background:#f5f4f0;color:#666}
+.sch-chip.deadline{background:#fff4e0;color:#8a5200}
+.sch-chip.bp{background:#eeeeff;color:#5d57fb}
+.sch-footer{display:flex;align-items:center;justify-content:space-between}
+.sch-win{font-size:11px;color:#999}
+.sch-apply{background:#5d57fb;color:#fff;border:none;border-radius:9px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif}
+.sch-apply.secondary{background:#eeeeff;color:#5d57fb}
+
+.section-divider{display:flex;align-items:center;gap:8px;margin:20px 16px 12px}
+.divider-label{font-size:12px;font-weight:600;color:#999;white-space:nowrap}
+.divider-line{flex:1;height:.5px;background:#e8e6df}
+
+.upcoming-card{background:#fff;border-radius:14px;border:.5px solid #e8e6df;padding:12px 14px;display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.uc-date{width:42px;height:42px;border-radius:10px;background:#eeeeff;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
+.uc-month{font-size:9px;color:#5d57fb;font-weight:700;text-transform:uppercase}
+.uc-day{font-size:16px;font-weight:800;color:#5d57fb;line-height:1}
+.uc-info{flex:1}
+.uc-name{font-size:13px;font-weight:600;color:#1a1a1a}
+.uc-sub{font-size:11px;color:#999;margin-top:2px}
+.uc-remind{background:#eeeeff;color:#5d57fb;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:600;cursor:pointer;flex-shrink:0;font-family:'Inter',sans-serif}
+
+.app-banner{background:#1a1a2e;border-radius:16px;padding:16px;display:flex;gap:12px;align-items:center;margin:0 16px}
+.app-icon{width:48px;height:48px;border-radius:12px;background:#5d57fb;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.app-text{flex:1}
+.app-hl{font-size:13px;font-weight:700;color:#fff;margin-bottom:2px}
+.app-sub{font-size:11px;color:rgba(255,255,255,.5);line-height:1.4}
+.app-btn{background:#5d57fb;color:#fff;border:none;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:600;cursor:pointer;flex-shrink:0;font-family:'Inter',sans-serif}
+
+/* ANNOTATION PANEL */
+.anno-panel{width:390px;background:#fff;border-radius:16px;border:.5px solid #e8e6df;padding:16px}
+.anno-panel h3{font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:12px;padding-bottom:10px;border-bottom:.5px solid #f0efe8}
+.anno{display:flex;gap:8px;margin-bottom:10px;align-items:flex-start}
+.anno-n{width:17px;height:17px;border-radius:50%;background:#5d57fb;color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.anno-t{font-size:12px;color:#444;line-height:1.55}
+.anno-t strong{color:#1a1a1a;font-weight:600}
+</style>
 </head>
 <body>
-  <h1>Bold Dashboard Redesign</h1>
+<div class="outer">
+
+  <div class="controls">
+    <span class="ctrl-label">User state</span>
+    <div class="ctrl-row">
+      <button class="ctrl-btn active" onclick="setState('new')">New user</button>
+      <button class="ctrl-btn" onclick="setState('partial')">Partially engaged</button>
+      <button class="ctrl-btn" onclick="setState('returning')">Returning</button>
+    </div>
+  </div>
+
+  <div class="phone">
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <div class="hamburger"><div class="hb-line"></div><div class="hb-line"></div><div class="hb-line"></div></div>
+      <div class="logo">
+        <div class="logo-grid"><div class="logo-dot"></div><div class="logo-dot"></div><div class="logo-dot"></div><div class="logo-dot"></div><div class="logo-dot"></div><div class="logo-dot"></div><div class="logo-dot"></div><div class="logo-dot"></div><div class="logo-dot"></div></div>
+        <span class="logo-text">bold<span class="logo-tld">.org</span></span>
+      </div>
+      <div class="topbar-right">
+        <div class="bp-pill">
+          <div class="bp-icon"><div class="bp-dot"></div><div class="bp-dot"></div><div class="bp-dot"></div><div class="bp-dot"></div><div class="bp-dot"></div><div class="bp-dot"></div><div class="bp-dot"></div><div class="bp-dot"></div><div class="bp-dot"></div></div>
+          <span class="bp-val" id="bp-val">0 BP</span>
+        </div>
+        <button class="notif-btn">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1a5 5 0 00-5 5v2.5L1.5 11h13L13 8.5V6a5 5 0 00-5-5z" stroke="#444" stroke-width="1.2" fill="none"/><path d="M6.5 13.5a1.5 1.5 0 003 0" stroke="#444" stroke-width="1.2" fill="none"/></svg>
+          <span class="badge" id="notif-badge">3</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- PAGE TABS -->
+    <div class="page-tabs">
+      <div class="pt active" onclick="switchTab('dashboard')">Dashboard</div>
+      <div class="pt" onclick="switchTab('scholarships')">Scholarships</div>
+      <div class="pt" onclick="switchTab('rewards')">Rewards</div>
+    </div>
+
+    <div class="scroll" id="scroll-area">
+
+      <!-- ===== DASHBOARD ===== -->
+      <div class="page active" id="page-dashboard">
+
+        <!-- NEW USER -->
+        <div id="dash-new">
+          <div class="cockpit">
+            <p class="ckt-eyebrow">Hey Jane — welcome to Bold.org</p>
+            <p class="ckt-headline">Your personal <em>student funding</em> cockpit</p>
+            <div class="meter glass">
+              <div class="meter-top"><span class="meter-val">$0.00</span><span class="meter-goal">Goal: $22.50 first redemption</span></div>
+              <p class="meter-sub">Complete actions below to earn real money toward your student loans</p>
+              <div class="bar-bg"><div class="bar-fill" style="width:0%"></div></div>
+              <div class="milestones"><span class="ms hit">$0</span><span class="ms">$7.50</span><span class="ms">$15</span><span class="ms next">$22.50</span></div>
+              <div class="pace-row"><div class="pace-dot"></div><span class="pace-text">Your 0 BP = <strong style="color:#fff">$0.00</strong> toward student loans. Earn 200 BP this week to hit your first milestone.</span></div>
+            </div>
+            <div class="comeback">
+              <div class="comeback-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="rgba(255,255,255,.8)" stroke-width="1.2"/><path d="M7 4.5V7l2 1.5" stroke="rgba(255,255,255,.8)" stroke-width="1.2" stroke-linecap="round"/></svg></div>
+              <p class="comeback-text"><strong>Come back Thursday</strong> — the Bold No-Essay Scholarship opens. We'll remind you.</p>
+            </div>
+            <div class="steps-strip">
+              <div class="step-cell"><span class="step-icon" style="color:rgba(255,255,255,.9)">✓</span><span class="step-lbl">Account<br>created</span><div class="step-check"><svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4L3 5.5L6.5 2" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div></div>
+              <div class="step-cell"><span class="step-icon" style="color:rgba(255,255,255,.9)">✓</span><span class="step-lbl">Basic<br>info</span><div class="step-check"><svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4L3 5.5L6.5 2" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div></div>
+              <div class="step-cell"><span class="step-icon" style="color:rgba(255,255,255,.45);font-size:11px">+50</span><span class="step-lbl">Add<br>photo</span><span class="step-pts">50 BP</span><div class="step-open"></div></div>
+              <div class="step-cell"><span class="step-icon" style="color:rgba(255,255,255,.25);font-size:12px">–</span><span class="step-lbl">Write<br>bio</span><span class="step-pts">100 BP</span><div class="step-open"></div></div>
+              <div class="step-cell"><span class="step-icon" style="color:rgba(255,255,255,.25);font-size:12px">–</span><span class="step-lbl">Interests</span><span class="step-pts">50 BP</span><div class="step-open"></div></div>
+            </div>
+          </div>
+          <div class="cockpit-pad"></div>
+
+          <div class="sec">
+            <div class="sec-hd"><span class="sec-title">Your best move right now</span></div>
+            <div class="action-card">
+              <div class="ac-tag purple">⚡ Best match · No essay · 2 min to apply</div>
+              <div class="ac-body">
+                <div class="ac-row">
+                  <div class="ac-thumb"><div class="ac-thumb-num">100</div><div class="ac-thumb-lbl">No-Essay<br>Schol.</div></div>
+                  <div class="ac-info">
+                    <p class="ac-name">Bold.org No-Essay Scholarship</p>
+                    <div class="ac-chips"><span class="chip easy">No essay</span><span class="chip prize">$500 prize</span><span class="chip deadline">Closes Apr 30</span></div>
+                    <div class="win-signal"><div class="win-dot" style="background:#1f7a3d"></div><span>Few applicants · high win probability</span></div>
+                  </div>
+                </div>
+                <div class="ac-btns"><div class="btn-p">Apply now — earn 100 BP ($0.30)</div><div class="btn-g">Save</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec">
+            <div class="sec-hd"><span class="sec-title">How Bold helps you earn</span></div>
+            <div class="pipeline">
+              <div class="pl-row"><div class="pl-ic pu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.5" fill="#5d57fb"/><rect x="9" y="2" width="5" height="5" rx="1.5" fill="#5d57fb"/><rect x="2" y="9" width="5" height="5" rx="1.5" fill="#5d57fb"/><rect x="9" y="9" width="5" height="5" rx="1.5" fill="#a9a6fd"/></svg></div><div class="pl-txt"><p class="pl-name">Apply to scholarships</p><p class="pl-sub">Win real scholarship awards</p></div><span class="pl-val pu">$500–$25k</span></div>
+              <div class="pl-row"><div class="pl-ic gr"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#1f7a3d" stroke-width="1.5"/><path d="M8 5v3l2 2" stroke="#1f7a3d" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="pl-txt"><p class="pl-name">Earn Bold Points via partners</p><p class="pl-sub">Partners pay to help fund your debt</p></div><span class="pl-val gr">= real $</span></div>
+              <div class="pl-row"><div class="pl-ic am"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 13h10M8 4v5M5.5 6.5L8 4l2.5 2.5" stroke="#8a5200" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="pl-txt"><p class="pl-name">Redeem for student loans</p><p class="pl-sub">Direct payment to your loan servicer</p></div><span class="pl-val am">$22.50 min</span></div>
+            </div>
+          </div>
+
+          <div class="sec">
+            <div class="sec-hd"><span class="sec-title">Start earning</span><span class="sec-link">See all</span></div>
+            <div class="earn-grid">
+              <div class="earn-card"><div class="ec-ic" style="background:#e0f7f0"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="8" rx="2" stroke="#1f7a3d" stroke-width="1.2"/><path d="M5 4V3a3 3 0 016 0v1" stroke="#1f7a3d" stroke-width="1.2"/></svg></div><p class="ec-name">TopResume offer</p><p class="ec-earn">Earn $6.00</p><p class="ec-sub">toward your student loans</p><div class="ec-bar"><div class="ec-bar-fill" style="width:0%"></div></div></div>
+              <div class="earn-card"><div class="ec-ic" style="background:#eeeeff"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2.5" stroke="#5d57fb" stroke-width="1.2"/><path d="M5.5 8h5M8 5.5v5" stroke="#5d57fb" stroke-width="1.2" stroke-linecap="round"/></svg></div><p class="ec-name">Browser plugin</p><p class="ec-earn">Earn while you shop</p><p class="ec-sub">10,000+ stores · passive</p><div class="ec-bar"><div class="ec-bar-fill" style="width:0%"></div></div></div>
+              <div class="earn-card" style="grid-column:1/-1;display:flex;align-items:center;gap:12px">
+                <div class="ec-ic" style="background:#fff4e0;width:40px;height:40px;flex-shrink:0;margin-bottom:0"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="4" y="1" width="8" height="14" rx="2" stroke="#8a5200" stroke-width="1.2"/><circle cx="8" cy="12.5" r="1" fill="#8a5200"/></svg></div>
+                <div style="flex:1"><p class="ec-name" style="font-size:13px">Get the Bold mobile app</p><p class="ec-sub" style="font-size:11px">Mobile sessions earn 30–50% more per visit. Plus deadline push alerts.</p></div>
+                <button style="background:#5d57fb;color:#fff;border:none;border-radius:9px;padding:8px 12px;font-size:11px;font-weight:600;cursor:pointer;flex-shrink:0;font-family:'Inter',sans-serif">Download</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec">
+            <div class="sec-hd"><span class="sec-title">This week, across Bold</span></div>
+            <div class="proof-strip">
+              <div class="proof-cell"><p class="proof-num">$14,230</p><p class="proof-lbl">paid toward<br>student loans</p></div>
+              <div class="proof-cell"><p class="proof-num">847</p><p class="proof-lbl">students<br>earned rewards</p></div>
+              <div class="proof-cell"><p class="proof-num">23</p><p class="proof-lbl">scholarship<br>winners</p></div>
+            </div>
+          </div>
+        </div><!-- /dash-new -->
+
+        <!-- PARTIAL -->
+        <div id="dash-partial" style="display:none">
+          <div class="cockpit">
+            <p class="ckt-eyebrow">Welcome back, Jane</p>
+            <p class="ckt-headline">You're <em>$4.50</em> toward your first redemption</p>
+            <div class="meter glass">
+              <div class="meter-top"><span class="meter-val">$4.50</span><span class="meter-goal">Goal: $22.50</span></div>
+              <p class="meter-sub">$18.00 more unlocks your first student loan payment</p>
+              <div class="bar-bg"><div class="bar-fill" style="width:20%"></div></div>
+              <div class="milestones"><span class="ms hit">$0</span><span class="ms">$7.50</span><span class="ms">$15</span><span class="ms next">$22.50</span></div>
+              <div class="pace-row"><div class="pace-dot"></div><span class="pace-text">At your current pace, unlock <strong style="color:#fff">$22.50 toward loans</strong> in ~3 weeks. One partner offer today gets you there in 5 days.</span></div>
+            </div>
+            <div class="comeback">
+              <div class="comeback-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="rgba(255,255,255,.8)" stroke-width="1.2"/><path d="M7 4.5V7l2 1.5" stroke="rgba(255,255,255,.8)" stroke-width="1.2" stroke-linecap="round"/></svg></div>
+              <p class="comeback-text"><strong>Earn 200 more BP this week</strong> to reach your next milestone.</p>
+            </div>
+          </div>
+          <div class="cockpit-pad"></div>
+
+          <div class="sec">
+            <div class="notice"><div class="notice-ic"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 3v3M6 8v.5" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/><circle cx="6" cy="6" r="4.5" stroke="#fff" stroke-width="1.2"/></svg></div><div><p class="nt-title">2 applications need your attention</p><p class="nt-sub">Finish before Apr 5 to stay in the running</p></div></div>
+          </div>
+
+          <div class="sec">
+            <div class="sec-hd"><span class="sec-title">Highest impact action today</span></div>
+            <div class="action-card">
+              <div class="ac-tag green">💰 Partner offer — earns $6.00 toward your loans</div>
+              <div class="ac-body">
+                <div class="ac-row">
+                  <div class="ac-thumb" style="background:linear-gradient(135deg,#1f7a3d,#2d9e55);font-size:26px;flex-direction:row">📋</div>
+                  <div class="ac-info">
+                    <p class="ac-name">TopResume — Free Resume Review</p>
+                    <div class="ac-chips"><span class="chip easy">Free</span><span class="chip prize">+$6.00 to loans</span></div>
+                    <div class="win-signal"><div class="win-dot" style="background:#1f7a3d"></div><span>Gets you 45% of the way to your first redemption</span></div>
+                  </div>
+                </div>
+                <div class="ac-btns"><div class="btn-p">Earn $6.00 now →</div><div class="btn-g">Skip</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec">
+            <div class="sec-hd"><span class="sec-title">Your funding pipeline</span></div>
+            <div class="pipeline">
+              <div class="pl-row"><div class="pl-ic pu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.5" fill="#5d57fb"/><rect x="9" y="2" width="5" height="5" rx="1.5" fill="#5d57fb"/><rect x="2" y="9" width="5" height="5" rx="1.5" fill="#5d57fb"/><rect x="9" y="9" width="5" height="5" rx="1.5" fill="#a9a6fd"/></svg></div><div class="pl-txt"><p class="pl-name">Scholarships applied</p><p class="pl-sub">3 pending · results in 14 days</p></div><span class="pl-val pu">3 active</span></div>
+              <div class="pl-row"><div class="pl-ic gr"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#1f7a3d" stroke-width="1.5"/><path d="M5.5 8.5l2 2 3-4" stroke="#1f7a3d" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="pl-txt"><p class="pl-name">Bold Points earned</p><p class="pl-sub">1,500 pts = $4.50</p></div><span class="pl-val gr">$4.50</span></div>
+              <div class="pl-row"><div class="pl-ic am"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2l1.5 3 3.5.5-2.5 2.5.5 3.5L8 10 5 11.5l.5-3.5L3 5.5l3.5-.5z" fill="#EF9F27" opacity=".4"/></svg></div><div class="pl-txt"><p class="pl-name">Available to redeem</p><p class="pl-sub">Unlocks at $22.50 (7,500 BP)</p></div><span class="pl-val dim">$18 to go</span></div>
+            </div>
+          </div>
+
+          <div class="sec">
+            <div class="sec-hd"><span class="sec-title">Top 3 picks for you</span><span class="sec-link">View all 329</span></div>
+            <div class="sch-card">
+              <div class="sch-img-area"><div class="sch-amount">$500</div><span class="sch-signal sig-strong">Strong match</span><span class="sch-time">Closes Apr 30</span></div>
+              <div class="sch-body"><p class="sch-name">Bold.org No-Essay Scholarship</p><div class="sch-chips"><span class="sch-chip easy">No essay</span><span class="sch-chip bp">+100 BP on apply</span></div><div class="sch-footer"><span class="sch-win">Few applicants · 2 min</span><button class="sch-apply">Apply</button></div></div>
+            </div>
+          </div>
+        </div><!-- /dash-partial -->
+
+        <!-- RETURNING -->
+        <div id="dash-returning" style="display:none">
+          <div class="cockpit">
+            <p class="ckt-eyebrow">Back again, Jane 🔥 4-day streak</p>
+            <p class="ckt-headline">You're <em>$3.75 away</em> from cashing out</p>
+            <div class="meter glass">
+              <div class="meter-top"><span class="meter-val">$18.75</span><span class="meter-goal">Goal: $22.50</span></div>
+              <p class="meter-sub">Earn just $3.75 more to make your next student loan payment</p>
+              <div class="bar-bg"><div class="bar-fill" style="width:83%"></div></div>
+              <div class="milestones"><span class="ms hit">$0</span><span class="ms hit">$7.50</span><span class="ms hit">$15</span><span class="ms next">$22.50 ✦</span></div>
+              <div class="pace-row"><div class="pace-dot"></div><span class="pace-text">One partner offer today gets you over the line. Or keep earning toward a larger redemption.</span></div>
+            </div>
+            <div class="steps-strip" style="margin-bottom:0">
+              <div class="step-cell"><span class="step-icon" style="color:rgba(255,255,255,.9)">✓</span><span class="step-lbl">Profile<br>complete</span><div class="step-check"><svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4L3 5.5L6.5 2" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div></div>
+              <div class="step-cell"><span class="step-icon" style="color:rgba(255,255,255,.9)">✓</span><span class="step-lbl">11 apps<br>sent</span><div class="step-check"><svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4L3 5.5L6.5 2" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div></div>
+              <div class="step-cell"><span class="step-icon" style="color:rgba(255,255,255,.9)">✓</span><span class="step-lbl">Plugin<br>installed</span><div class="step-check"><svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4L3 5.5L6.5 2" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div></div>
+              <div class="step-cell"><span class="step-icon" style="color:rgba(255,255,255,.35);font-size:12px">+</span><span class="step-lbl">Mobile<br>app</span><span class="step-pts">+30%</span><div class="step-open"></div></div>
+              <div class="step-cell"><span class="step-icon" style="color:rgba(255,255,255,.35);font-size:12px">★</span><span class="step-lbl">1st<br>redeem</span><span class="step-pts">Close!</span><div class="step-open"></div></div>
+            </div>
+          </div>
+          <div class="cockpit-pad"></div>
+
+          <div style="padding:0 16px;margin-top:20px">
+            <div class="redeem-card">
+              <p class="rc-lbl">Ready to redeem</p>
+              <p class="rc-amount">$18.75</p>
+              <p class="rc-sub">Apply to your student loans now, or wait until $22.50</p>
+              <button class="rc-btn">Redeem toward loans →</button>
+            </div>
+          </div>
+
+          <div style="padding:12px 0 0"><div class="streak-bar"><span class="fire">🔥</span><div class="sb-text"><p class="sb-hl">4-day streak — you're in the top 12%</p><p class="sb-sub">$14,230 paid to student loans this week across Bold</p></div></div></div>
+
+          <div class="sec">
+            <div class="sec-hd"><span class="sec-title">New since your last visit</span></div>
+            <div class="action-card">
+              <div class="ac-tag amber">🌟 New partner offer · earns $19.50</div>
+              <div class="ac-body">
+                <div class="ac-row">
+                  <div class="ac-thumb" style="background:linear-gradient(135deg,#8a5200,#c4760a);font-size:26px;flex-direction:row">📱</div>
+                  <div class="ac-info">
+                    <p class="ac-name">Verizon — Switch &amp; Earn</p>
+                    <div class="ac-chips"><span class="chip prize">+$19.50 to loans</span><span class="chip deadline">Limited time</span></div>
+                    <div class="win-signal"><div class="win-dot" style="background:#8a5200"></div><span>This alone covers your next full redemption</span></div>
+                  </div>
+                </div>
+                <div class="ac-btns"><div class="btn-p">Earn $19.50 →</div><div class="btn-g">Later</div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sec">
+            <div class="sec-hd"><span class="sec-title">Your funding total</span></div>
+            <div class="pipeline">
+              <div class="pl-row"><div class="pl-ic pu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.5" fill="#5d57fb"/><rect x="9" y="2" width="5" height="5" rx="1.5" fill="#5d57fb"/><rect x="2" y="9" width="5" height="5" rx="1.5" fill="#5d57fb"/><rect x="9" y="9" width="5" height="5" rx="1.5" fill="#a9a6fd"/></svg></div><div class="pl-txt"><p class="pl-name">Scholarships applied</p><p class="pl-sub">11 total · 1 finalist</p></div><span class="pl-val pu">11 sent</span></div>
+              <div class="pl-row"><div class="pl-ic gr"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#1f7a3d" stroke-width="1.5"/><path d="M5.5 8.5l2 2 3-4" stroke="#1f7a3d" stroke-width="1.5" stroke-linecap="round"/></svg></div><div class="pl-txt"><p class="pl-name">Bold Points this month</p><p class="pl-sub">6,250 pts earned</p></div><span class="pl-val gr">$18.75</span></div>
+              <div class="pl-row"><div class="pl-ic am"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2l1.5 3 3.5.5-2.5 2.5.5 3.5L8 10 5 11.5l.5-3.5L3 5.5l3.5-.5z" fill="#EF9F27"/></svg></div><div class="pl-txt"><p class="pl-name">Lifetime redeemed</p><p class="pl-sub">Paid toward student loans</p></div><span class="pl-val am">$45.00</span></div>
+            </div>
+          </div>
+        </div><!-- /dash-returning -->
+
+      </div><!-- /page-dashboard -->
+
+      <!-- ===== REWARDS ===== -->
+      <div class="page" id="page-rewards">
+        <div class="rewards-hero">
+          <p class="rh-label">Your Bold Points</p>
+          <p class="rh-balance" id="rh-bal">0 BP</p>
+          <p class="rh-equiv" id="rh-equiv">= $0.00 toward your student loans</p>
+          <div class="rh-glass">
+            <div class="rh-bar-row"><span class="rh-bar-label">Progress to first redemption ($22.50)</span><span class="rh-bar-pct" id="rh-pct">0%</span></div>
+            <div class="rh-bar-bg"><div class="rh-bar-fill" id="rh-fill" style="width:0%"></div></div>
+            <div class="rh-redeem-row">
+              <p class="rh-redeem-info" id="rh-redeem-info">Earn 7,500 BP to unlock your first $22.50 student loan payment</p>
+              <button class="rh-redeem-btn disabled" id="rh-redeem-btn">Redeem</button>
+            </div>
+            <div class="rh-pace"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4.5" stroke="rgba(255,255,255,.5)" stroke-width="1"/><path d="M6 3.5V6l1.5 1" stroke="rgba(255,255,255,.5)" stroke-width="1" stroke-linecap="round"/></svg><span id="rh-pace-text">Your 0 BP = $0.00. At your current pace, you'll unlock your first redemption in about 8 weeks.</span></div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-hd"><span class="sec-title">What you can redeem for</span></div>
+          <div class="redeem-opts">
+            <div class="redeem-opt best"><div class="best-badge">Most popular</div><div class="ro-ic">🎓</div><p class="ro-name">Student loan payment</p><p class="ro-sub">Direct to your servicer</p><p class="ro-min">Min $22.50 · 7,500 BP</p></div>
+            <div class="redeem-opt"><div class="ro-ic">🏛️</div><p class="ro-name">Tuition payment</p><p class="ro-sub">Applied to your balance</p><p class="ro-min">Min $22.50 · 7,500 BP</p></div>
+            <div class="redeem-opt"><div class="ro-ic">💵</div><p class="ro-name">Cash (PayPal)</p><p class="ro-sub">To your PayPal account</p><p class="ro-min">Min $22.50 · 7,500 BP</p></div>
+            <div class="redeem-opt"><div class="ro-ic">🎁</div><p class="ro-name">Gift cards</p><p class="ro-sub">Amazon, Target &amp; more</p><p class="ro-min">Min $10 · 3,000 BP</p></div>
+          </div>
+        </div>
+
+        <div class="sec">
+          <div class="sec-hd"><span class="sec-title">Ways to earn toward your loans</span></div>
+          <div class="earn-way"><div class="ew-top"><div class="ew-ic" style="background:#e0f7f0"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="5" width="14" height="9" rx="2" stroke="#1f7a3d" stroke-width="1.3"/><path d="M6 5V4a3 3 0 016 0v1" stroke="#1f7a3d" stroke-width="1.3"/></svg></div><div class="ew-info"><p class="ew-name">Partner offers</p><p class="ew-earn">Earn $1.50–$58.50 per offer</p></div><button class="ew-cta">Browse</button></div><div class="ew-desc">Bold partners pay to connect with students like you — and 100% of that goes toward paying your debt. These aren't ads. They're the partners that fund your loans.</div><div class="ew-merchants"><div class="merchant"><p class="merchant-name">TopResume</p><p class="merchant-pts">$6.00</p></div><div class="merchant"><p class="merchant-name">Verizon</p><p class="merchant-pts">$19.50</p></div><div class="merchant"><p class="merchant-name">SafeStreets</p><p class="merchant-pts">$78.00</p></div><div class="merchant"><p class="merchant-name">Survey Junkie</p><p class="merchant-pts">$6.83</p></div><div class="merchant"><p class="merchant-name">Gobble</p><p class="merchant-pts">$2.93</p></div></div></div>
+          <div class="earn-way"><div class="ew-top"><div class="ew-ic" style="background:#eeeeff"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="14" height="14" rx="3" stroke="#5d57fb" stroke-width="1.3"/><path d="M6 9h6M9 6v6" stroke="#5d57fb" stroke-width="1.3" stroke-linecap="round"/></svg></div><div class="ew-info"><p class="ew-name">Browser plugin</p><p class="ew-earn">Earn at 10,000+ stores</p></div><button class="ew-cta secondary">Install</button></div><div class="ew-desc">Automatically earn Bold Points every time you shop online — at Amazon, Nike, Best Buy, and thousands more. Install once, earn forever.</div></div>
+          <div class="earn-way"><div class="ew-top"><div class="ew-ic" style="background:#eaf6ee"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 2l2 5.5H17l-4.5 3.5 1.5 5.5L9 13l-5 3.5 1.5-5.5L1 7.5h6z" stroke="#1f7a3d" stroke-width="1.3" fill="none"/></svg></div><div class="ew-info"><p class="ew-name">Scholarship applications</p><p class="ew-earn">Earn 50–500 BP per application</p></div><button class="ew-cta secondary">Apply</button></div><div class="ew-desc">Every scholarship application earns you Bold Points — win or lose. Apply to a no-essay scholarship in 2 minutes to start earning today.</div></div>
+          <div class="earn-way"><div class="ew-top"><div class="ew-ic" style="background:#fff4e0"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="5" y="1" width="8" height="16" rx="2" stroke="#8a5200" stroke-width="1.3"/><circle cx="9" cy="14" r="1.2" fill="#8a5200"/></svg></div><div class="ew-info"><p class="ew-name">Mobile app</p><p class="ew-earn">30–50% more per session</p></div><button class="ew-cta">Download</button></div><div class="ew-desc">Mobile sessions generate significantly more funding toward you per visit. Get deadline push alerts too — never miss a scholarship closing.</div></div>
+        </div>
+
+        <div class="sec" style="padding-bottom:8px">
+          <div class="sec-hd"><span class="sec-title">This week on Bold</span></div>
+          <div class="proof-strip">
+            <div class="proof-cell"><p class="proof-num">$14,230</p><p class="proof-lbl">paid to<br>student loans</p></div>
+            <div class="proof-cell"><p class="proof-num">847</p><p class="proof-lbl">students<br>earned</p></div>
+            <div class="proof-cell"><p class="proof-num">Avg $42</p><p class="proof-lbl">redeemed<br>per user</p></div>
+          </div>
+        </div>
+      </div><!-- /rewards -->
+
+      <!-- ===== SCHOLARSHIPS ===== -->
+      <div class="page" id="page-scholarships">
+        <div class="sch-hero">
+          <p class="sh-greeting">329 scholarships matched to you</p>
+          <p class="sh-headline">Start with your best chances</p>
+          <div class="sh-tabs"><div class="sh-tab active">Best Match</div><div class="sh-tab">No-Essay</div><div class="sh-tab">Saved</div><div class="sh-tab">Applied</div></div>
+        </div>
+        <div class="search-row">
+          <input class="search-input" type="text" placeholder="Search scholarships...">
+          <div class="filter-btn"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1.5 3.5h11M3.5 7h7M5.5 10.5h3" stroke="#555" stroke-width="1.2" stroke-linecap="round"/></svg></div>
+        </div>
+
+        <div style="padding:0 16px;margin-top:16px">
+          <div class="sch-card"><div class="sch-img-area"><div class="sch-amount">$500</div><span class="sch-signal sig-strong">Best match</span><span class="sch-time">Closes Apr 30</span></div><div class="sch-body"><p class="sch-name">Bold.org No-Essay Scholarship</p><div class="sch-chips"><span class="sch-chip easy">No essay</span><span class="sch-chip deadline">Closes Apr 30</span><span class="sch-chip bp">+100 BP</span><span class="sch-chip easy">2 min</span></div><div class="sch-footer"><span class="sch-win">Few applicants · high win probability</span><button class="sch-apply">Apply</button></div></div></div>
+          <div class="sch-card"><div class="sch-img-area green"><div class="sch-amount green">$1,000</div><span class="sch-signal sig-few">Few applicants</span><span class="sch-time">Closes Apr 4</span></div><div class="sch-body"><p class="sch-name">Future Leaders in Accounting Scholarship</p><div class="sch-chips"><span class="sch-chip easy">Accounting major</span><span class="sch-chip essay">Short essay</span><span class="sch-chip bp">+200 BP</span></div><div class="sch-footer"><span class="sch-win">High match · closes in 2 days</span><button class="sch-apply">Apply</button></div></div></div>
+          <div class="sch-card"><div class="sch-img-area amber"><div class="sch-amount amber">$2,500</div><span class="sch-signal sig-new">New</span><span class="sch-time">Closes May 15</span></div><div class="sch-body"><p class="sch-name">CollegeXpress No-Essay Scholarship</p><div class="sch-chips"><span class="sch-chip easy">No essay</span><span class="sch-chip easy">HS / college</span><span class="sch-chip bp">+150 BP</span></div><div class="sch-footer"><span class="sch-win">Rolling deadline · 2 winners</span><button class="sch-apply">Apply</button></div></div></div>
+        </div>
+
+        <div class="section-divider"><span class="divider-label">Opening soon</span><div class="divider-line"></div></div>
+        <div style="padding:0 16px">
+          <div class="upcoming-card"><div class="uc-date"><span class="uc-month">APR</span><span class="uc-day">10</span></div><div class="uc-info"><p class="uc-name">$5,000 Engineering Leadership Award</p><p class="uc-sub">No essay · opens in 8 days · high match</p></div><button class="uc-remind">Remind me</button></div>
+          <div class="upcoming-card"><div class="uc-date"><span class="uc-month">APR</span><span class="uc-day">18</span></div><div class="uc-info"><p class="uc-name">Bold Women in STEM Scholarship</p><p class="uc-sub">Short essay · opens Apr 18 · strong match</p></div><button class="uc-remind">Remind me</button></div>
+        </div>
+
+        <div class="section-divider"><span class="divider-label">Essay required</span><div class="divider-line"></div></div>
+        <div style="padding:0 16px">
+          <div class="sch-card"><div class="sch-img-area deep"><div class="sch-amount deep">$10,000</div><span class="sch-signal sig-strong">Strong match</span></div><div class="sch-body"><p class="sch-name">Lenny AI Future Is Now Scholarship</p><div class="sch-chips"><span class="sch-chip essay">500-word essay</span><span class="sch-chip deadline">May 22 deadline</span><span class="sch-chip bp">+500 BP</span></div><div class="sch-footer"><span class="sch-win">High prize · moderate competition</span><button class="sch-apply secondary">View</button></div></div></div>
+        </div>
+
+        <div style="padding:12px 16px 0">
+          <div style="background:#eeeeff;border-radius:14px;padding:14px;display:flex;gap:10px;align-items:center">
+            <div style="width:36px;height:36px;border-radius:10px;background:#5d57fb;flex-shrink:0;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5.5" r="2.5" stroke="#fff" stroke-width="1.2"/><path d="M3 13c0-2.8 2.2-5 5-5s5 2.2 5 5" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/></svg></div>
+            <div style="flex:1"><p style="font-size:13px;font-weight:700;color:#3a35c4">Complete your profile to unlock more matches</p><p style="font-size:11px;color:#5d57fb;margin-top:2px">Adding a photo makes you 8× more likely to win</p></div>
+            <button style="background:#5d57fb;color:#fff;border:none;border-radius:9px;padding:7px 12px;font-size:11px;font-weight:600;cursor:pointer;flex-shrink:0;font-family:'Inter',sans-serif">Update</button>
+          </div>
+        </div>
+
+        <div style="padding:16px 16px 0">
+          <div class="app-banner">
+            <div class="app-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="4" y="1" width="14" height="20" rx="3" stroke="#fff" stroke-width="1.4"/><circle cx="11" cy="18" r="1.5" fill="#fff"/></svg></div>
+            <div class="app-text"><p class="app-hl">Get deadline alerts on mobile</p><p class="app-sub">Push notifications keep you on track. Plus 30–50% more earnings per session.</p></div>
+            <button class="app-btn">Get app</button>
+          </div>
+        </div>
+      </div><!-- /scholarships -->
+
+    </div><!-- /scroll -->
+  </div><!-- /phone -->
+
+  <!-- ANNOTATION PANELS -->
+  <div class="anno-panel" id="anno-dashboard-new">
+    <h3>Dashboard · New user</h3>
+    <div class="anno"><div class="anno-n">1</div><div class="anno-t"><strong>Solid #5d57fb cockpit</strong> with iOS-style glass cards (backdrop-filter blur + semi-transparent white border) — the meter, comeback nudge, and progress strip all float on the brand color without competing with it.</div></div>
+    <div class="anno"><div class="anno-n">2</div><div class="anno-t"><strong>Dollar-first progress meter</strong> replaces "0 BP" with "$0.00 toward student loans" and a milestone bar to $22.50. Value is legible from the first second.</div></div>
+    <div class="anno"><div class="anno-n">3</div><div class="anno-t"><strong>"Come back Thursday"</strong> anchors the user to a future event before they leave — converting first visit to second visit.</div></div>
+    <div class="anno"><div class="anno-n">4</div><div class="anno-t"><strong>One action card</strong>, not 329 scholarships. Match quality, time to complete, and win probability in a single glance.</div></div>
+    <div class="anno"><div class="anno-n">5</div><div class="anno-t"><strong>Mobile app CTA</strong> framed as "earn more, faster" with the explicit 30–50% stat — a revenue driver, not a banner.</div></div>
+  </div>
+  <div class="anno-panel" id="anno-dashboard-partial" style="display:none">
+    <h3>Dashboard · Partially engaged</h3>
+    <div class="anno"><div class="anno-n">1</div><div class="anno-t"><strong>Specific weekly target</strong>: "Earn 200 more BP this week" — not "3,000 to redeem." Makes progress feel achievable, not a treadmill.</div></div>
+    <div class="anno"><div class="anno-n">2</div><div class="anno-t"><strong>Projected pace</strong>: "One partner offer today gets you there in 5 days." Gives a concrete shortcut back to momentum.</div></div>
+    <div class="anno"><div class="anno-n">3</div><div class="anno-t"><strong>Partner offer framed as debt payoff</strong>: "gets you 45% of the way to redemption" — not an ad. The loan connection is explicit.</div></div>
+    <div class="anno"><div class="anno-n">4</div><div class="anno-t"><strong>3 curated scholarships</strong> instead of 329. "View all" is available but deemphasized — best match first, no overwhelm.</div></div>
+  </div>
+  <div class="anno-panel" id="anno-dashboard-returning" style="display:none">
+    <h3>Dashboard · Returning user</h3>
+    <div class="anno"><div class="anno-n">1</div><div class="anno-t"><strong>Near-redemption urgency</strong>: "$3.75 away" leads the page. Redemption card dominates when the user is close to cashing out.</div></div>
+    <div class="anno"><div class="anno-n">2</div><div class="anno-t"><strong>Streak + top 12%</strong> builds identity and FOMO. "Come back tomorrow" is implicit in the streak count — not stated as a nag.</div></div>
+    <div class="anno"><div class="anno-n">3</div><div class="anno-t"><strong>"New since your last visit"</strong> keeps the feed fresh — a reason to return every session, not a static list.</div></div>
+    <div class="anno"><div class="anno-n">4</div><div class="anno-t"><strong>Lifetime redeemed ($45.00)</strong> reinforces that Bold has paid real money toward their debt — the core trust anchor for long-term retention.</div></div>
+  </div>
+  <div class="anno-panel" id="anno-rewards" style="display:none">
+    <h3>Rewards page</h3>
+    <div class="anno"><div class="anno-n">1</div><div class="anno-t"><strong>Balance in dollars first</strong>: "0 BP = $0.00 toward student loans" — the equivalence is stated immediately, not buried below the fold.</div></div>
+    <div class="anno"><div class="anno-n">2</div><div class="anno-t"><strong>Glass card</strong> holds the progress bar, redeem CTA, and pace projection — all critical actions float together on the solid brand hero.</div></div>
+    <div class="anno"><div class="anno-n">3</div><div class="anno-t"><strong>Redeem options visible from day 1</strong> — not hidden behind a threshold wall. Students know what they're earning toward (loans, tuition, cash) before they earn a single BP.</div></div>
+    <div class="anno"><div class="anno-n">4</div><div class="anno-t"><strong>Merchant earn amounts in dollars</strong> (TopResume: $6.00, Verizon: $19.50) — not raw BP. Value of each action is instantly comparable.</div></div>
+    <div class="anno"><div class="anno-n">5</div><div class="anno-t"><strong>"These aren't ads. They're the partners that fund your loans."</strong> — transparent framing replaces "Vetted Partner Program."</div></div>
+  </div>
+  <div class="anno-panel" id="anno-scholarships" style="display:none">
+    <h3>Scholarships page</h3>
+    <div class="anno"><div class="anno-n">1</div><div class="anno-t"><strong>Default: Best Match</strong> — not "All 329." Curated to 3–5 high-fit cards. The firehose is opt-in via tab, not the default view.</div></div>
+    <div class="anno"><div class="anno-n">2</div><div class="anno-t"><strong>Win probability on every card</strong>: "Best match," "Few applicants," "New." Replaces abstract eligibility percentages with legible signals.</div></div>
+    <div class="anno"><div class="anno-n">3</div><div class="anno-t"><strong>"Opening soon" + Remind me</strong> gives users a forward anchor — pairs with the dashboard "come back" nudge to drive return visits.</div></div>
+    <div class="anno"><div class="anno-n">4</div><div class="anno-t"><strong>No-essay / essay separation</strong> by section divider — quick wins first, investment scholarships below. Reduces cognitive load on every visit.</div></div>
+    <div class="anno"><div class="anno-n">5</div><div class="anno-t"><strong>Profile nudge in context</strong> with a specific benefit ("8× more likely to win") — not buried in settings where no one finds it.</div></div>
+  </div>
+
+</div><!-- /outer -->
+
+<script>
+var cur='new',curTab='dashboard';
+function setState(s){
+  cur=s;
+  document.querySelectorAll('.ctrl-btn').forEach((b,i)=>b.classList.toggle('active',['new','partial','returning'][i]===s));
+  ['new','partial','returning'].forEach(x=>{var el=document.getElementById('dash-'+x);if(el)el.style.display=x===s?'block':'none';});
+  var bpMap={new:'0 BP',partial:'1,500 BP',returning:'6,250 BP'};
+  var equivMap={new:'= $0.00 toward your student loans',partial:'= $4.50 toward your student loans',returning:'= $18.75 toward your student loans'};
+  var pctMap={new:0,partial:20,returning:83};
+  var paceMap={new:"Your 0 BP = $0.00. At your current pace, you'll unlock your first redemption in about 8 weeks.",partial:"Your 1,500 BP = $4.50. At your current pace, you'll unlock $22.50 in about 3 weeks.",returning:"Your 6,250 BP = $18.75. You're just $3.75 away — one partner offer today does it."};
+  var riMap={new:'Earn 7,500 BP to unlock your first $22.50 student loan payment',partial:'1,500 / 7,500 BP — $18.00 to go',returning:'6,250 / 7,500 BP — almost there!'};
+  document.getElementById('bp-val').textContent=bpMap[s];
+  document.getElementById('notif-badge').textContent={new:'3',partial:'5',returning:'2'}[s];
+  ['rh-bal','rh-equiv','rh-pct','rh-fill','rh-redeem-info','rh-pace-text','rh-redeem-btn'].forEach(id=>{var el=document.getElementById(id);if(!el)return;
+    if(id==='rh-bal')el.textContent=bpMap[s];
+    if(id==='rh-equiv')el.textContent=equivMap[s];
+    if(id==='rh-pct')el.textContent=pctMap[s]+'%';
+    if(id==='rh-fill')el.style.width=pctMap[s]+'%';
+    if(id==='rh-redeem-info')el.textContent=riMap[s];
+    if(id==='rh-pace-text')el.textContent=paceMap[s];
+    if(id==='rh-redeem-btn')el.classList.toggle('disabled',s!=='returning');
+  });
+  updateAnnotations();
+}
+function switchTab(tab){
+  curTab=tab;
+  document.querySelectorAll('.pt').forEach((t,i)=>t.classList.toggle('active',['dashboard','scholarships','rewards'][i]===tab));
+  ['dashboard','scholarships','rewards'].forEach(p=>{var el=document.getElementById('page-'+p);if(el)el.classList.toggle('active',p===tab);});
+  document.getElementById('scroll-area').scrollTop=0;
+  updateAnnotations();
+}
+function updateAnnotations(){
+  document.querySelectorAll('.anno-panel').forEach(p=>p.style.display='none');
+  var key=curTab==='dashboard'?'anno-dashboard-'+cur:'anno-'+curTab;
+  var el=document.getElementById(key);if(el)el.style.display='block';
+}
+setState('new');
+</script>
 </body>
 </html>
