@@ -319,25 +319,8 @@
     </div>
   </div>
   <script>
-    const sources = {
-      before: [
-        'https://cdn.jsdelivr.net/gh/AStevens22/Boldimages@main/Current.png',
-        'https://raw.githubusercontent.com/AStevens22/Boldimages/main/Current.png',
-      ],
-      after: [
-        'https://cdn.jsdelivr.net/gh/AStevens22/Boldimages@main/Proposed.png',
-        'https://raw.githubusercontent.com/AStevens22/Boldimages/main/Proposed.png',
-      ]
-    };
-
-    function tryLoad(imgEl, urls, i) {
-      if (i >= urls.length) return;
-      imgEl.onerror = () => tryLoad(imgEl, urls, i + 1);
-      imgEl.src = urls[i];
-    }
-
-    tryLoad(document.getElementById('img-before'), sources.before, 0);
-    tryLoad(document.getElementById('img-after'),  sources.after,  0);
+    document.getElementById('img-before').src = 'Before.png';
+    document.getElementById('img-after').src  = 'After.png';
   </script>
 
   <!-- PROTOTYPE LINK -->
